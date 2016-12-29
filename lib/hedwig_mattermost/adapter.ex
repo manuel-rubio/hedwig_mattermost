@@ -40,6 +40,26 @@ defmodule HedwigMattermost.Adapter do
     {:noreply, %State{state | user_id: user_id}}
   end
 
+  def handle_cast({:in, %{"event" => "posted"} = msg}, %{robot: robot} = state) do
+    post = Poison.decode!(msg["data"]["post"])
+    msg = %Hedwig.Message{
+      ref: make_ref(),
+      robot: robot,
+      room: post["channel_id"],
+      text: post["message"],
+      user: %Hedwig.User{
+        id: post["user_id"],
+        name: msg["data"]["sender_name"]
+      }
+    }
+
+    if msg.text do
+      :ok = Hedwig.Robot.handle_in(robot, msg)
+    end
+
+    {:noreply, state}
+  end
+
   def handle_cast({:in, msg}, state) do
     Logger.debug("unhandled message from connection: #{inspect(msg)}")
     {:noreply, state}
