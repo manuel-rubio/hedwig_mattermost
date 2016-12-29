@@ -1,20 +1,18 @@
 defmodule HedwigMattermost.HTTP do
   require Logger
+
   def login(url, username, password) do
     url = url <> "/api/v3/users/login"
     body = Poison.encode!(%{
       "login_id": username,
       "password": password
     })
-    headers = %{"Content-type": "application/json"}
-    case HTTPoison.post(url, body, headers) do
+    case HTTPoison.post(url, body, headers()) do
+      {:ok, %{status_code: 200} = resp} ->
+        token = :proplists.get_value("Token", resp.headers)
+        {:ok, token}
       {:ok, resp} ->
-        case :proplists.get_value("Token", resp.headers) do
-          :undefined ->
-            Logger.info("login error: #{inspect(resp.body)}")
-            {:error, :token_undefined}
-          token -> {:ok, token}
-        end
+        {:error, resp}
       error ->
         Logger.info("login error: #{inspect(error)}")
         error

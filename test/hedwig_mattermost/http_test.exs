@@ -15,14 +15,14 @@ defmodule HedwigMattermost.HTTPTest do
         assert conn.method == "POST"
         assert conn.request_path == "/api/v3/users/login"
         conn
-        |> Plug.Conn.put_resp_header("Token", "1234")
+        |> Plug.Conn.put_resp_header("Token", "XKCD")
         |> Plug.Conn.resp(200, "")
       end)
 
-      {:ok, "1234"} = HTTP.login(mattermost_url, username, password)
+      {:ok, "XKCD"} = HTTP.login(mattermost_url, username, password)
     end
 
-    test "when 401 returns token_undefined error", %{server: server} do
+    test "when status code is not 200, returns error", %{server: server} do
       username = "abc"
       password = "1234"
       mattermost_url = "http://localhost:#{server.port}"
@@ -31,7 +31,7 @@ defmodule HedwigMattermost.HTTPTest do
         Plug.Conn.resp(conn, 401, "")
       end)
 
-      {:error, :token_undefined} = HTTP.login(mattermost_url, username, password)
+      {:error, _} = HTTP.login(mattermost_url, username, password)
     end
 
     test "bad url returns HTTPoison error" do
