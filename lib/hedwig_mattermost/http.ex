@@ -59,23 +59,29 @@ defmodule HedwigMattermost.HTTP do
   end
 
   def list_channels(url, token, team_ids) when is_list(team_ids) do
-    maybe_channel_team = Enum.reduce(team_ids, %{}, fn
-      (team, acc) when is_map(acc) ->
-        case list_channels(url, token, team) do
-          {:ok, channels} ->
-            channel_team = Enum.reduce(channels, %{}, fn(channel, acc) ->
-              Map.put(acc, channel, team)
-            end)
-            Map.merge(acc, channel_team)
-          error -> error
-        end
-      (_, acc) -> acc
-    end)
+    make_team_channels = fn
+      (team, accumulator) when is_map(accumulator) ->
+        list_channels(url, token, team)
+        |> maybe_put_team_channels(team, accumulator)
+      (_, error) -> error
+    end
 
-    if is_map(maybe_channel_team) do
-      {:ok, maybe_channel_team}
-    else
-      maybe_channel_team
+    case Enum.reduce(team_ids, %{}, make_team_channels) do
+      team_channels when is_map(team_channels) ->
+        {:ok, make_channel_team(team_channels)}
+      error -> error
+    end
+  end
+
+  defp maybe_put_team_channels({:ok, _} = channels, team, acc), do: Map.put(acc, team, channels)
+  defp maybe_put_team_channels(error, _, _), do: error
+
+  defp make_channel_team(team_channel) do
+    for team <- Map.keys(team_channel),
+        {:ok, channels} = team_channel[team],
+        channel <- channels,
+        into: %{} do
+      {channel, team}
     end
   end
 
