@@ -18,4 +18,67 @@ defmodule HedwigMattermost.HTTP do
         error
     end
   end
+
+  def create_post(url, token, team_id, channel_id, user_id, text) do
+    url = url <> "/api/v3/teams/#{team_id}/channels/#{channel_id}/posts/create"
+    body = ~s({"user_id": "#{user_id}", "message": "#{text}", "channel_id": "#{channel_id}"})
+    case HTTPoison.post(url, body, headers(token)) do
+      {:ok, %{status_code: 200}} -> :ok
+      error ->
+        Logger.info("create post error: #{inspect(error)}")
+        error
+    end
+  end
+
+  def list_teams(url, token) do
+    url = url <> "/api/v3/teams/all"
+    case HTTPoison.get(url, headers(token)) do
+      {:ok, %{status_code: 200} = resp} ->
+        teams =
+          Poison.decode!(resp.body)
+          |> Enum.map(fn({id, _}) -> id end)
+        {:ok, teams}
+      error ->
+        Logger.info("list teams error: #{inspect(error)}")
+        error
+    end
+  end
+
+  def list_channels(url, token, team_id) when is_binary(team_id) do
+    url = url <> "/api/v3/teams/#{team_id}/channels/"
+    case HTTPoison.get(url, headers(token)) do
+      {:ok, %{status_code: 200} = resp} ->
+        channels =
+          Poison.decode!(resp.body)
+          |> Enum.map(fn(channel) -> channel["id"] end)
+        {:ok, channels}
+      error ->
+        Logger.info("list channels error: #{inspect(error)}")
+        error
+    end
+  end
+
+  def list_channels(url, token, team_ids) when is_list(team_ids) do
+    maybe_channel_team = Enum.reduce(team_ids, %{}, fn
+      (team, acc) when is_map(acc) ->
+        case list_channels(url, token, team) do
+          {:ok, channels} ->
+            channel_team = Enum.reduce(channels, %{}, fn(channel, acc) ->
+              Map.put(acc, channel, team)
+            end)
+            Map.merge(acc, channel_team)
+          error -> error
+        end
+      (_, acc) -> acc
+    end)
+
+    if is_map(maybe_channel_team) do
+      {:ok, maybe_channel_team}
+    else
+      maybe_channel_team
+    end
+  end
+
+  defp headers(), do: %{"Content-type" => "application/json"}
+  defp headers(token), do: %{"Content-type" => "application/json", "Authorization" => "Bearer #{token}"}
 end
