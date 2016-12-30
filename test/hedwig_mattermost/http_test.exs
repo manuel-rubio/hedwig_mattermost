@@ -19,7 +19,7 @@ defmodule HedwigMattermost.HTTPTest do
         |> Plug.Conn.resp(200, "")
       end)
 
-      {:ok, "XKCD"} = HTTP.login(mattermost_url, username, password)
+      assert {:ok, "XKCD"} = HTTP.login(mattermost_url, username, password)
     end
 
     test "when status code is not 200, returns error", %{server: server} do
@@ -31,7 +31,7 @@ defmodule HedwigMattermost.HTTPTest do
         Plug.Conn.resp(conn, 401, "")
       end)
 
-      {:error, _} = HTTP.login(mattermost_url, username, password)
+      assert {:error, _} = HTTP.login(mattermost_url, username, password)
     end
 
     test "bad url returns HTTPoison error" do
@@ -39,7 +39,7 @@ defmodule HedwigMattermost.HTTPTest do
       password = "1234"
       mattermost_url = "http://foreignhost"
 
-      {:error, %HTTPoison.Error{reason: :nxdomain}} = HTTP.login(mattermost_url, username, password)
+      assert {:error, %HTTPoison.Error{reason: :nxdomain}} = HTTP.login(mattermost_url, username, password)
     end
   end
 
@@ -60,7 +60,7 @@ defmodule HedwigMattermost.HTTPTest do
         Plug.Conn.resp(conn, 200, body)
       end)
 
-      {:ok, actual_teams} = HTTP.list_teams(mattermost_url, token)
+      assert {:ok, actual_teams} = HTTP.list_teams(mattermost_url, token)
       Enum.each(expected_teams, fn(team) ->
         assert team in actual_teams
       end)
@@ -85,7 +85,7 @@ defmodule HedwigMattermost.HTTPTest do
         Plug.Conn.resp(conn, 200, body)
       end)
 
-      {:ok, actual_channels} = HTTP.list_channels(mattermost_url, token, team_id)
+      assert {:ok, actual_channels} = HTTP.list_channels(mattermost_url, token, team_id)
       Enum.each(expected_channels, fn(channel) ->
         assert channel in actual_channels
       end)
@@ -109,7 +109,7 @@ defmodule HedwigMattermost.HTTPTest do
         Plug.Conn.resp(conn, 200, body)
       end)
 
-      {:ok, actual_channels} = HTTP.list_channels(mattermost_url, token, team_ids)
+      assert {:ok, actual_channels} = HTTP.list_channels(mattermost_url, token, team_ids)
       Enum.each(expected_channels, fn(channel) ->
         assert channel in Map.keys(actual_channels)
       end)
