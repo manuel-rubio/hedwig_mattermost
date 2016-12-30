@@ -11,11 +11,9 @@ defmodule HedwigMattermost.HTTP do
       {:ok, %{status_code: 200} = resp} ->
         token = :proplists.get_value("Token", resp.headers)
         {:ok, token}
-      {:ok, resp} ->
-        {:error, resp}
       error ->
         Logger.info("login error: #{inspect(error)}")
-        error
+        format_error(error)
     end
   end
 
@@ -26,7 +24,7 @@ defmodule HedwigMattermost.HTTP do
       {:ok, %{status_code: 200}} -> :ok
       error ->
         Logger.info("create post error: #{inspect(error)}")
-        error
+        format_error(error)
     end
   end
 
@@ -40,7 +38,7 @@ defmodule HedwigMattermost.HTTP do
         {:ok, teams}
       error ->
         Logger.info("list teams error: #{inspect(error)}")
-        error
+        format_error(error)
     end
   end
 
@@ -54,7 +52,7 @@ defmodule HedwigMattermost.HTTP do
         {:ok, channels}
       error ->
         Logger.info("list channels error: #{inspect(error)}")
-        error
+        format_error(error)
     end
   end
 
@@ -84,6 +82,9 @@ defmodule HedwigMattermost.HTTP do
       {channel, team}
     end
   end
+
+  defp format_error({:error, _} = error), do: error
+  defp format_error({:ok, %HTTPoison.Response{} = resp}), do: {:error, resp}
 
   defp headers(), do: %{"Content-type" => "application/json"}
   defp headers(token), do: %{"Content-type" => "application/json", "Authorization" => "Bearer #{token}"}
