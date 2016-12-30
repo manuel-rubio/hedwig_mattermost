@@ -107,6 +107,13 @@ defmodule HedwigMattermost.Adapter do
     {:noreply, state}
   end
 
+  def handle_cast({:emote, msg}, state) do
+    team_id = state.channel_team[msg.room]
+    text = "*" <> format_text(msg.text) <> "*"
+    HTTP.create_post(state.url, state.token, team_id, msg.room, state.user_id, text)
+    {:noreply, state}
+  end
+
   def handle_info(:start, %{url: url, username: username, password: password} = state) do
     with {:ok, token} <- HTTP.login(url, username, password),
       {:ok, teams} <- HTTP.list_teams(url, token),
