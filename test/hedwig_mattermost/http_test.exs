@@ -65,6 +65,17 @@ defmodule HedwigMattermost.HTTPTest do
         assert team in actual_teams
       end)
     end
+
+    test "when status code is not 200, returns error", %{server: server} do
+      token = "XKCD"
+      mattermost_url = "http://localhost:#{server.port}"
+
+      Bypass.expect(server, fn(conn) ->
+        Plug.Conn.resp(conn, 401, "")
+      end)
+
+      assert {:error, _} = HTTP.list_teams(mattermost_url, token)
+    end
   end
 
   describe "list channels" do
@@ -115,6 +126,24 @@ defmodule HedwigMattermost.HTTPTest do
       end)
       assert actual_channels[c1] == t1
       assert actual_channels[c3] == t2
+    end
+
+    test "returns error when partial error in list of teams", %{server: server} do
+      token = "XKCD"
+      mattermost_url = "http://localhost:#{server.port}"
+      [t1, t2] = team_ids = ["team1", "team2"]
+      [c1, c2, c3] = expected_channels = ["channel1", "channel2", "channel3"]
+
+      Bypass.expect(server, fn(conn) ->
+        if String.contains?(conn.request_path, t1) do
+          body = ~s([{"id":"#{c1}"}, {"id":"#{c2}"}])
+          Plug.Conn.resp(conn, 200, body)
+        else
+          Plug.Conn.resp(conn, 404, "")
+        end
+      end)
+
+      assert {:error, error} = HTTP.list_channels(mattermost_url, token, team_ids)
     end
   end
 
