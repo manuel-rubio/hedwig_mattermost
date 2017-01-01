@@ -116,10 +116,9 @@ defmodule HedwigMattermost.Adapter do
 
   def handle_info(:start, %{url: url, username: username, password: password} = state) do
     with {:ok, token} <- HTTP.login(url, username, password),
-      {:ok, teams} <- HTTP.list_teams(url, token),
-      {:ok, channel_team} <- HTTP.list_channels(url, token, teams),
-      {:ok, pid} <- Supervisor.start_child(Connection.Supervisor, [self(), url, token])
-    do
+         {:ok, teams} <- HTTP.list_teams(url, token),
+         {:ok, channel_team} <- HTTP.list_channels(url, token, teams),
+         {:ok, pid} <- Supervisor.start_child(Connection.Supervisor, [self(), url, token]) do
       ref = Process.monitor(pid)
       next_state = %State{state |
         conn_pid: pid,
