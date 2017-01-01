@@ -33,7 +33,8 @@ defmodule HedwigMattermost.HTTP do
     case HTTPoison.get(url, headers(token)) do
       {:ok, %{status_code: 200} = resp} ->
         teams =
-          Poison.decode!(resp.body)
+          resp.body
+          |> Poison.decode!()
           |> Enum.map(fn({id, _}) -> id end)
         {:ok, teams}
       error ->
@@ -47,7 +48,8 @@ defmodule HedwigMattermost.HTTP do
     case HTTPoison.get(url, headers(token)) do
       {:ok, %{status_code: 200} = resp} ->
         channels =
-          Poison.decode!(resp.body)
+          resp.body
+          |> Poison.decode!()
           |> Enum.map(fn(channel) -> channel["id"] end)
         {:ok, channels}
       error ->

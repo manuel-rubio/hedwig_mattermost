@@ -45,6 +45,7 @@ defmodule HedwigMattermost.Mixfile do
       # Test dependencies
       {:plug, "~> 1.0", only: :test},
       {:bypass, "~> 0.5", only: :test},
+      {:credo, "~> 0.5", only: [:dev, :test]},
     ]
   end
 
