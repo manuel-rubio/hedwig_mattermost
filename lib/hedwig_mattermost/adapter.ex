@@ -94,23 +94,27 @@ defmodule HedwigMattermost.Adapter do
   end
 
   def handle_cast({:reply, msg}, state) do
-    team_id = state.channel_team[msg.room]
-    text = "@#{msg.user.name} " <> format_text(msg.text)
-    HTTP.create_post(state.url, state.token, team_id, msg.room, state.user_id, text)
-    {:noreply, state}
+    text = "@#{msg.user.name} " <> msg.text
+    do_post(text, msg, state)
   end
 
   def handle_cast({:send, msg}, state) do
-    team_id = state.channel_team[msg.room]
-    text = format_text(msg.text)
-    HTTP.create_post(state.url, state.token, team_id, msg.room, state.user_id, text)
-    {:noreply, state}
+    do_post(msg.text, msg, state)
   end
 
   def handle_cast({:emote, msg}, state) do
+    text = "*" <> msg.text <> "*"
+    do_post(text, msg, state)
+  end
+
+  defp do_post(text, msg, state) do
     team_id = state.channel_team[msg.room]
-    text = "*" <> format_text(msg.text) <> "*"
-    HTTP.create_post(state.url, state.token, team_id, msg.room, state.user_id, text)
+    post = %{
+      user_id: state.user_id,
+      channel_id: msg.room,
+      message: text,
+    }
+    HTTP.create_post(state.url, state.token, team_id, post)
     {:noreply, state}
   end
 
@@ -148,10 +152,6 @@ defmodule HedwigMattermost.Adapter do
         Kernel.send(self(), :start)
         {:noreply, reset_state(state)}
     end
-  end
-
-  defp format_text(text) do
-    String.replace(text, "\n", "\\n")
   end
 
   defp reset_state(state) do
