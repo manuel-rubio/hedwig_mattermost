@@ -6,7 +6,7 @@ defmodule HedwigMattermost.Connection do
 
   def start_link(owner_pid, url, token) do
     ws_url = String.replace(url, "http", "ws") <> "/api/v3/users/websocket"
-    :websocket_client.start_link(to_char_list(ws_url), __MODULE__, [owner_pid, token])
+    :websocket_client.start_link(to_charlist(ws_url), __MODULE__, [owner_pid, token])
   end
 
   # :websocket_client callbacks

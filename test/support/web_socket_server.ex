@@ -35,6 +35,10 @@ defmodule HedwigMattermost.Support.WebSocketServer do
     {:ok, req, opts, 5000}
   end
 
+  def websocket_info(_, req, state) do
+    {:ok, req, state}
+  end
+
   def websocket_handle({:ping, msg}, req, state) do
     {:reply, {:pong, msg}, req, state}
   end
