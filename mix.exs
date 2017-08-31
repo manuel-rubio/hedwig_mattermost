@@ -38,14 +38,14 @@ defmodule HedwigMattermost.Mixfile do
   defp deps do
     [
       {:hedwig, "~> 1.0"},
-      {:poison, "~> 3.0"},
-      {:websocket_client, "~> 1.2"},
-      {:httpoison, "~> 0.10"},
+      {:poison, "~> 3.1"},
+      {:websocket_client, "~> 1.3"},
+      {:httpoison, "~> 0.13.0"},
 
       # Test dependencies
-      {:plug, "~> 1.0", only: :test},
-      {:bypass, "~> 0.5", only: :test},
-      {:credo, "~> 0.5", only: [:dev, :test]},
+      {:plug, "~> 1.4", only: :test},
+      {:bypass, "~> 0.8.1", only: :test},
+      {:credo, "~> 0.8.6", only: [:dev, :test]},
     ]
   end
 
