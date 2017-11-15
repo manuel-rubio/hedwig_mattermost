@@ -107,17 +107,6 @@ defmodule HedwigMattermost.Adapter do
     do_post(text, msg, state)
   end
 
-  defp do_post(text, msg, state) do
-    team_id = state.channel_team[msg.room]
-    post = %{
-      user_id: state.user_id,
-      channel_id: msg.room,
-      message: text,
-    }
-    HTTP.create_post(state.url, state.token, team_id, post)
-    {:noreply, state}
-  end
-
   def handle_info(:start, %{url: url, username: username, password: password} = state) do
     with {:ok, token} <- HTTP.login(url, username, password),
          {:ok, teams} <- HTTP.list_teams(url, token),
@@ -140,6 +129,33 @@ defmodule HedwigMattermost.Adapter do
   def handle_info({:DOWN, ref, :process, pid, reason}, %{conn_pid: pid, conn_ref: ref} = state) do
     handle_network_failure(reason, state)
   end
+
+  defp do_post(text, msg, state) do
+    team_id = state.channel_team[msg.room]
+
+    post =
+      text
+      |> to_post(msg, state.user_id)
+      |> add_attachments(msg.private)
+
+    HTTP.create_post(state.url, state.token, team_id, post)
+    {:noreply, state}
+  end
+
+  defp to_post(text, msg, user_id) do
+    %{
+      user_id: user_id,
+      channel_id: msg.room,
+      message: text,
+      props: %{},
+    }
+  end
+
+  defp add_attachments(post, %{attachments: attachments}) do
+    put_in(post, [:props, :attachments], attachments)
+  end
+
+  defp add_attachments(post, _msg), do: post
 
   defp handle_network_failure(reason, %{robot: robot} = state) do
     case Hedwig.Robot.handle_disconnect(robot, reason) do
