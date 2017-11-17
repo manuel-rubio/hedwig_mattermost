@@ -24,9 +24,6 @@ defmodule HedwigMattermost.Support.WebSocketServer do
   end
 
   ## WebSocket Callbacks
-
-  require Logger
-
   def init(_, req, opts) do
     {:upgrade, :protocol, :cowboy_websocket, req, opts}
   end
