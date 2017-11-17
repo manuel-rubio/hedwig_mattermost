@@ -1,11 +1,13 @@
 defmodule HedwigMattermost.Connection do
+  @moduledoc false
+
   require Logger
 
   @behaviour :websocket_client
   @keepalive 30_000
 
   def start_link(owner_pid, url, token) do
-    ws_url = String.replace(url, "http", "ws") <> "/api/v3/users/websocket"
+    ws_url = String.replace(url, "http", "ws") <> "/api/v4/websocket"
     :websocket_client.start_link(to_charlist(ws_url), __MODULE__, [owner_pid, token])
   end
 
