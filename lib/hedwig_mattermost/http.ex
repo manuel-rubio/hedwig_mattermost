@@ -12,7 +12,7 @@ defmodule HedwigMattermost.HTTP do
         token = :proplists.get_value("Token", resp.headers)
         {:ok, token}
       error ->
-        Logger.info("login error: #{inspect(error)}")
+        Logger.info(fn () -> "login error: #{inspect(error)}" end)
         format_error(error)
     end
   end
@@ -23,7 +23,7 @@ defmodule HedwigMattermost.HTTP do
     case HTTPoison.post(url, body, headers(token)) do
       {:ok, %{status_code: 201}} -> :ok
       error ->
-        Logger.info("create post error: #{inspect(error)}")
+        Logger.info(fn () -> "create post error: #{inspect(error)}" end)
         format_error(error)
     end
   end

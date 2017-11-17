@@ -63,7 +63,7 @@ defmodule HedwigMattermost.Adapter do
   end
 
   def handle_cast({:in, msg}, state) do
-    Logger.debug("unhandled message from connection: #{inspect(msg)}")
+    Logger.debug(fn () -> "unhandled message from connection: #{inspect(msg)}" end)
     {:noreply, state}
   end
 

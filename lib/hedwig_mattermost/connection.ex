@@ -34,7 +34,6 @@ defmodule HedwigMattermost.Connection do
   end
 
   def websocket_handle({:text, data}, _req, %{owner_pid: owner} = state) do
-    Logger.debug("websocket message: #{inspect(data)}")
     msg = Poison.decode!(data)
     HedwigMattermost.Adapter.handle_in(owner, msg)
     {:ok, state}
@@ -51,7 +50,7 @@ defmodule HedwigMattermost.Connection do
   end
 
   def websocket_handle(msg, _req, state) do
-    Logger.warn("Received unhandled websocket message: #{inspect(msg)}")
+    Logger.warn(fn () -> "Received unhandled websocket message: #{inspect(msg)}" end)
     {:ok, state}
   end
 
@@ -74,12 +73,11 @@ defmodule HedwigMattermost.Connection do
   end
 
   def websocket_info(msg, _req, state) do
-    Logger.warn("Received unhandled message: #{inspect(msg)}")
+    Logger.warn(fn () -> "Received unhandled message: #{inspect(msg)}" end)
     {:ok, state}
   end
 
-  def websocket_terminate(reason, _req, _state) do
-    Logger.debug("websocket terminate: #{inspect(reason)}")
+  def websocket_terminate(_reason, _req, _state) do
     :ok
   end
 end
