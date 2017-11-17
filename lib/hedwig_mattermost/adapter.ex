@@ -131,15 +131,13 @@ defmodule HedwigMattermost.Adapter do
   end
 
   defp do_post(text, msg, state) do
-    team_id = state.channel_team[msg.room]
-
     post =
       msg
       |> to_post(state.user_id)
       |> add_text(text)
       |> add_attachments(msg.private)
 
-    HTTP.create_post(state.url, state.token, team_id, post)
+    HTTP.create_post(state.url, state.token, post)
 
     {:noreply, state}
   end

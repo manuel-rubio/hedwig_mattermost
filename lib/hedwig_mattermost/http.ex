@@ -17,11 +17,11 @@ defmodule HedwigMattermost.HTTP do
     end
   end
 
-  def create_post(url, token, team_id, post) do
-    url = url <> "/api/v3/teams/#{team_id}/channels/#{post.channel_id}/posts/create"
+  def create_post(url, token, post) do
+    url = url <> "/api/v4/posts"
     body = Poison.encode!(post)
     case HTTPoison.post(url, body, headers(token)) do
-      {:ok, %{status_code: 200}} -> :ok
+      {:ok, %{status_code: 201}} -> :ok
       error ->
         Logger.info("create post error: #{inspect(error)}")
         format_error(error)
