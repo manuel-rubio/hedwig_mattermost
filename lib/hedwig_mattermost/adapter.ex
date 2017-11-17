@@ -3,6 +3,7 @@ defmodule HedwigMattermost.Adapter do
 
   require Logger
 
+  alias Hedwig.Robot
   alias HedwigMattermost.{HTTP, Connection}
 
   defmodule State do
@@ -37,7 +38,7 @@ defmodule HedwigMattermost.Adapter do
 
   def handle_cast({:in, %{"event" => "hello"} = msg}, state) do
     user_id = msg["broadcast"]["user_id"]
-    Hedwig.Robot.handle_connect(state.robot)
+    Robot.handle_connect(state.robot)
     {:noreply, %State{state | user_id: user_id}}
   end
 
@@ -56,7 +57,7 @@ defmodule HedwigMattermost.Adapter do
 
     # Ignore empty messages and messages from the bot
     if msg.text && msg.user.id != state.user_id do
-      :ok = Hedwig.Robot.handle_in(robot, msg)
+      :ok = Robot.handle_in(robot, msg)
     end
 
     {:noreply, state}
@@ -132,7 +133,7 @@ defmodule HedwigMattermost.Adapter do
   defp add_attachments(post, _msg), do: post
 
   defp handle_network_failure(reason, %{robot: robot} = state) do
-    case Hedwig.Robot.handle_disconnect(robot, reason) do
+    case Robot.handle_disconnect(robot, reason) do
       {:disconnect, reason} ->
         {:stop, reason, state}
       {:reconnect, timeout} ->

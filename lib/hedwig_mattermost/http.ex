@@ -31,6 +31,6 @@ defmodule HedwigMattermost.HTTP do
   defp format_error({:error, _} = error), do: error
   defp format_error({:ok, %HTTPoison.Response{} = resp}), do: {:error, resp}
 
-  defp headers(), do: %{"Content-type" => "application/json"}
+  defp headers, do: %{"Content-type" => "application/json"}
   defp headers(token), do: %{"Content-type" => "application/json", "Authorization" => "Bearer #{token}"}
 end

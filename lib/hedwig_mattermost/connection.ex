@@ -3,6 +3,8 @@ defmodule HedwigMattermost.Connection do
 
   require Logger
 
+  alias HedwigMattermost.Adapter
+
   @behaviour :websocket_client
   @keepalive 30_000
 
@@ -37,7 +39,7 @@ defmodule HedwigMattermost.Connection do
 
   def websocket_handle({:text, data}, _req, %{owner_pid: owner} = state) do
     msg = Poison.decode!(data)
-    HedwigMattermost.Adapter.handle_in(owner, msg)
+    Adapter.handle_in(owner, msg)
     {:ok, state}
   end
 
