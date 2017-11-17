@@ -13,9 +13,7 @@ defmodule HedwigMattermost.Adapter do
       user_id: nil,
       conn_pid: nil,
       conn_ref: nil,
-      token: nil,
-      teams: [],
-      channel_team: %{}
+      token: nil
   end
 
   def init({robot, opts}) do
@@ -41,30 +39,6 @@ defmodule HedwigMattermost.Adapter do
     user_id = msg["broadcast"]["user_id"]
     Hedwig.Robot.handle_connect(state.robot)
     {:noreply, %State{state | user_id: user_id}}
-  end
-
-  def handle_cast({:in, %{"event" => "user_added"} = msg}, %{user_id: user_id} = state) do
-    # update channel_team if the event is for the bot user
-    channel_team = case msg["data"]["user_id"] do
-      ^user_id ->
-        channel_id = msg["broadcast"]["channel_id"]
-        team_id = msg["data"]["team_id"]
-        Map.put(state.channel_team, channel_id, team_id)
-      _ -> state.channel_team
-    end
-    {:noreply, %{state | channel_team: channel_team}}
-  end
-
-  def handle_cast({:in, %{"event" => "direct_added"} = msg}, %{user_id: user_id} = state) do
-    # the direct_added event does not carry team_id
-    # so the entire channel_team map is built again
-    channel_team = case msg["data"]["teammate_id"] do
-      ^user_id ->
-        {:ok, channel_team} = HTTP.list_channels(state.url, state.token, state.teams)
-        channel_team
-      _ -> state.channel_team
-    end
-    {:noreply, %{state | channel_team: channel_team}}
   end
 
   def handle_cast({:in, %{"event" => "posted"} = msg}, %{robot: robot} = state) do
@@ -109,16 +83,12 @@ defmodule HedwigMattermost.Adapter do
 
   def handle_info(:start, %{url: url, username: username, password: password} = state) do
     with {:ok, token} <- HTTP.login(url, username, password),
-         {:ok, teams} <- HTTP.list_teams(url, token),
-         {:ok, channel_team} <- HTTP.list_channels(url, token, teams),
          {:ok, pid} <- Supervisor.start_child(Connection.Supervisor, [self(), url, token]) do
       ref = Process.monitor(pid)
       next_state = %State{state |
         conn_pid: pid,
         conn_ref: ref,
         token: token,
-        teams: teams,
-        channel_team: channel_team
       }
       {:noreply, next_state}
     else
@@ -131,15 +101,13 @@ defmodule HedwigMattermost.Adapter do
   end
 
   defp do_post(text, msg, state) do
-    team_id = state.channel_team[msg.room]
-
     post =
       msg
       |> to_post(state.user_id)
       |> add_text(text)
       |> add_attachments(msg.private)
 
-    HTTP.create_post(state.url, state.token, team_id, post)
+    HTTP.create_post(state.url, state.token, post)
 
     {:noreply, state}
   end
@@ -182,8 +150,6 @@ defmodule HedwigMattermost.Adapter do
       conn_pid: nil,
       conn_ref: nil,
       token: nil,
-      teams: [],
-      channel_team: %{}
     }
   end
 end
