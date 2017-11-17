@@ -2,7 +2,7 @@ defmodule HedwigMattermost.HTTP do
   require Logger
 
   def login(url, username, password) do
-    url = url <> "/api/v3/users/login"
+    url = url <> "/api/v4/users/login"
     body = Poison.encode!(%{
       "login_id": username,
       "password": password
