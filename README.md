@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/trarbr/hedwig_mattermost.svg?branch=master)](https://travis-ci.org/trarbr/hedwig_mattermost)
+
 # HedwigMattermost
 
 Mattermost adapter for the Hedwig bot framework.
