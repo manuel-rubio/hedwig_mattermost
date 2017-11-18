@@ -6,7 +6,7 @@ Mattermost adapter for the Hedwig bot framework.
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
+HedwigMattermost can be installed from [Hex](https://hex.pm/packages/hedwig_mattermost):
 
   1. Add `hedwig_mattermost` to your list of dependencies in `mix.exs`:
 
