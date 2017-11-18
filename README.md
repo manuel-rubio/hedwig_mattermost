@@ -26,14 +26,14 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
 ## Configuration
 
-HedwigMattermost requires the following configuration to be present: `mattermost_url`, `username` and `password`. E.g.:
+In addition to the standard Hedwig configuration parameter,s HedwigMattermost requires the following configuration to be present: `mattermost_url`, `username` and `password`. `username` and `password` must match a user account for your Mattermost instance. `username` can be either an email or username, depending on the settings for email authentication in Mattermost. Example:
 
 ```elixir
 config :alfred, Alfred.Robot,
   adapter: HedwigMattermost.Adapter,
   name: "alfred",
   aka: "/",
-  username: "alfred",
+  username: "alfred@example.org",
   password: "super_secret",
   mattermost_url: "https://mattermost.example.org",
   responders: [
