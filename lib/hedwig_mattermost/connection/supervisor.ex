@@ -1,16 +1,17 @@
 defmodule HedwigMattermost.Connection.Supervisor do
-  use Supervisor
+  @moduledoc false
+  use DynamicSupervisor
 
-  def start_link do
-    Supervisor.start_link(__MODULE__, [], name: __MODULE__)
+  def start_link([]) do
+    DynamicSupervisor.start_link(__MODULE__, [], name: __MODULE__)
   end
 
+  @impl DynamicSupervisor
   def init([]) do
-    children = [
-      worker(HedwigMattermost.Connection, [], restart: :temporary)
-    ]
-
-    supervise(children, strategy: :simple_one_for_one)
+    DynamicSupervisor.init(strategy: :one_for_one)
   end
 
+  def start_child(args) do
+    DynamicSupervisor.start_child(__MODULE__, {HedwigMattermost.Connection, args})
+  end
 end

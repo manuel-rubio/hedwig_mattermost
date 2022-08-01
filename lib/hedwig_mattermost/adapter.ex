@@ -8,13 +8,13 @@ defmodule HedwigMattermost.Adapter do
 
   defmodule State do
     defstruct robot: nil,
-      url: nil,
-      username: nil,
-      password: nil,
-      user_id: nil,
-      conn_pid: nil,
-      conn_ref: nil,
-      token: nil
+              url: nil,
+              username: nil,
+              password: nil,
+              user_id: nil,
+              conn_pid: nil,
+              conn_ref: nil,
+              token: nil
   end
 
   def init({robot, opts}) do
@@ -22,12 +22,14 @@ defmodule HedwigMattermost.Adapter do
     {password, opts} = Keyword.pop(opts, :password)
     {url, _opts} = Keyword.pop(opts, :mattermost_url)
     Kernel.send(self(), :start)
+
     state = %State{
       robot: robot,
       username: username,
       password: password,
-      url: url,
+      url: url
     }
+
     {:ok, state}
   end
 
@@ -44,6 +46,7 @@ defmodule HedwigMattermost.Adapter do
 
   def handle_cast({:in, %{"event" => "posted"} = msg}, %{robot: robot} = state) do
     post = Poison.decode!(msg["data"]["post"])
+
     msg = %Hedwig.Message{
       ref: make_ref(),
       robot: robot,
@@ -64,7 +67,7 @@ defmodule HedwigMattermost.Adapter do
   end
 
   def handle_cast({:in, msg}, state) do
-    Logger.debug(fn () -> "unhandled message from connection: #{inspect(msg)}" end)
+    Logger.debug(fn -> "unhandled message from connection: #{inspect(msg)}" end)
     {:noreply, state}
   end
 
@@ -84,13 +87,9 @@ defmodule HedwigMattermost.Adapter do
 
   def handle_info(:start, %{url: url, username: username, password: password} = state) do
     with {:ok, token} <- HTTP.login(url, username, password),
-         {:ok, pid} <- Supervisor.start_child(Connection.Supervisor, [self(), url, token]) do
+         {:ok, pid} <- Connection.Supervisor.start_child([self(), url, token]) do
       ref = Process.monitor(pid)
-      next_state = %State{state |
-        conn_pid: pid,
-        conn_ref: ref,
-        token: token,
-      }
+      next_state = %State{state | conn_pid: pid, conn_ref: ref, token: token}
       {:noreply, next_state}
     else
       error -> handle_network_failure(error, state)
@@ -118,7 +117,7 @@ defmodule HedwigMattermost.Adapter do
       user_id: user_id,
       channel_id: msg.room,
       message: nil,
-      props: %{},
+      props: %{}
     }
   end
 
@@ -136,9 +135,11 @@ defmodule HedwigMattermost.Adapter do
     case Robot.handle_disconnect(robot, reason) do
       {:disconnect, reason} ->
         {:stop, reason, state}
+
       {:reconnect, timeout} ->
         Process.send_after(self(), :start, timeout)
         {:noreply, reset_state(state)}
+
       :reconnect ->
         Kernel.send(self(), :start)
         {:noreply, reset_state(state)}
@@ -146,11 +147,6 @@ defmodule HedwigMattermost.Adapter do
   end
 
   defp reset_state(state) do
-    %State{state |
-      user_id: nil,
-      conn_pid: nil,
-      conn_ref: nil,
-      token: nil,
-    }
+    %State{state | user_id: nil, conn_pid: nil, conn_ref: nil, token: nil}
   end
 end

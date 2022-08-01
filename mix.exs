@@ -6,12 +6,12 @@ defmodule HedwigMattermost.Mixfile do
       app: :hedwig_mattermost,
       version: "0.1.0",
       elixir: "~> 1.3",
-      elixirc_paths: elixirc_paths(Mix.env),
-      build_embedded: Mix.env == :prod,
-      start_permanent: Mix.env == :prod,
+      elixirc_paths: elixirc_paths(Mix.env()),
+      build_embedded: Mix.env() == :prod,
+      start_permanent: Mix.env() == :prod,
       deps: deps(),
       description: "Mattermost adapter for the Hedwig bot framework.",
-      package: package(),
+      package: package()
     ]
   end
 
@@ -20,36 +20,22 @@ defmodule HedwigMattermost.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     [
-      applications: [
-        :logger,
-        :hedwig,
-        :websocket_client,
-        :httpoison,
-      ],
-      mod: {HedwigMattermost, []},
+      extra_applications: [:logger],
+      mod: {HedwigMattermost, []}
     ]
   end
 
-  # Dependencies can be Hex packages:
-  #
-  #   {:mydep, "~> 0.3.0"}
-  #
-  # Or git/path repositories:
-  #
-  #   {:mydep, git: "https://github.com/elixir-lang/mydep.git", tag: "0.1.0"}
-  #
-  # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:hedwig, "~> 1.0"},
-      {:poison, "~> 3.1"},
-      {:websocket_client, "~> 1.3"},
-      {:httpoison, "~> 0.13.0"},
+      {:hedwig, github: "manuel-rubio/hedwig", branch: "master"},
+      {:poison, "~> 5.0"},
+      {:websocket_client, "~> 1.4"},
+      {:httpoison, "~> 1.8"},
 
       # Test dependencies
-      {:plug, "~> 1.4", only: :test},
+      {:plug, "~> 1.4.3", only: :test},
       {:bypass, "~> 0.8.1", only: :test},
-      {:credo, "~> 0.8.10", only: [:dev, :test]},
+      {:credo, "~> 1.6", only: [:dev, :test]}
     ]
   end
 
@@ -63,7 +49,7 @@ defmodule HedwigMattermost.Mixfile do
       licenses: ["MIT"],
       links: %{
         "GitHub" => "https://github.com/trarbr/hedwig_mattermost"
-      },
+      }
     ]
   end
 end

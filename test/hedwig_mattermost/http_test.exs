@@ -11,9 +11,10 @@ defmodule HedwigMattermost.HTTPTest do
       password = "1234"
       mattermost_url = "http://localhost:#{server.port}"
 
-      Bypass.expect(server, fn(conn) ->
+      Bypass.expect(server, fn conn ->
         assert conn.method == "POST"
         assert conn.request_path == "/api/v4/users/login"
+
         conn
         |> Plug.Conn.put_resp_header("Token", "XKCD")
         |> Plug.Conn.resp(200, "")
@@ -27,7 +28,7 @@ defmodule HedwigMattermost.HTTPTest do
       password = "1234"
       mattermost_url = "http://localhost:#{server.port}"
 
-      Bypass.expect(server, fn(conn) ->
+      Bypass.expect(server, fn conn ->
         Plug.Conn.resp(conn, 401, "")
       end)
 
@@ -39,7 +40,8 @@ defmodule HedwigMattermost.HTTPTest do
       password = "1234"
       mattermost_url = "http://foreignhost"
 
-      assert {:error, %HTTPoison.Error{reason: :nxdomain}} = HTTP.login(mattermost_url, username, password)
+      assert {:error, %HTTPoison.Error{reason: :nxdomain}} =
+               HTTP.login(mattermost_url, username, password)
     end
   end
 
@@ -47,5 +49,4 @@ defmodule HedwigMattermost.HTTPTest do
     server = Bypass.open()
     {:ok, server: server}
   end
-
 end

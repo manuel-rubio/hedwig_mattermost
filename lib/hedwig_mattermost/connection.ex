@@ -17,12 +17,14 @@ defmodule HedwigMattermost.Connection do
   def init([owner_pid, token]) do
     Logger.debug("websocket init")
     owner_ref = Process.monitor(owner_pid)
+
     state = %{
       owner_pid: owner_pid,
       owner_ref: owner_ref,
       token: token,
-      seq: 1,
+      seq: 1
     }
+
     {:reconnect, state}
   end
 
@@ -54,30 +56,36 @@ defmodule HedwigMattermost.Connection do
   end
 
   def websocket_handle(msg, _req, state) do
-    Logger.warn(fn () -> "Received unhandled websocket message: #{inspect(msg)}" end)
+    Logger.warn(fn -> "Received unhandled websocket message: #{inspect(msg)}" end)
     {:ok, state}
   end
 
   def websocket_info({:send_token, token}, _req, state) do
     Logger.debug("websocket send_token")
+
     msg = %{
-      "seq": state.seq,
-      "action": "authentication_challenge",
-      "data": %{
-        "token": token,
+      seq: state.seq,
+      action: "authentication_challenge",
+      data: %{
+        token: token
       }
     }
+
     data = Poison.encode!(msg)
     next_state = %{state | seq: state.seq + 1}
     {:reply, {:text, data}, next_state}
   end
 
-  def websocket_info({:DOWN, ref, :process, pid, _reason}, _req, %{owner_pid: pid, owner_ref: ref} = state) do
+  def websocket_info(
+        {:DOWN, ref, :process, pid, _reason},
+        _req,
+        %{owner_pid: pid, owner_ref: ref} = state
+      ) do
     {:close, "", state}
   end
 
   def websocket_info(msg, _req, state) do
-    Logger.warn(fn () -> "Received unhandled message: #{inspect(msg)}" end)
+    Logger.warn(fn -> "Received unhandled message: #{inspect(msg)}" end)
     {:ok, state}
   end
 
